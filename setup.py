@@ -2,7 +2,7 @@
 from setuptools import setup
 
 setup(name='fapeed',
-	version='0.1.0-alpha',
+	version='0.2.0-alpha',
 	description='Fapeed - Adult Slideshow App',
 	url='https://github.com/pronopython/fapeed',
 	author='pronopython',

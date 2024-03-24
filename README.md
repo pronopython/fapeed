@@ -90,8 +90,23 @@ You can start Fapeed directly via command line and provide a directory to crawl 
 |+| increase images per second|
 |-| decrease images per second|
 |i| toggle info (FPS)|
+|left arrow| rewind back one image|
+|right arrow| one image forward to current position|
+|n| while in rewind: open current image|
+
+Rewind will trigger pause mode. Leave rewind by pressing left mouse button.
 
 Images per second are presented as "fps" = fapels per second. A fapel is a fap-able element... ;-)
+
+### Rewind
+
+Seen an image you like and want to know where it can be found?
+
+You can press `left` arrow key to pause Fapeed slideshow and activate the "rewind" feature. You can of course also first pause Fapeed with the left mouse button and then start rewinding.
+
+While in rewind, you can go through the last 100 shown images with `left` and `right` arrow key and open the currently selected image with `n` key in your system's default image viewer.
+
+Leave rewind by unpausing Fapeed with left mouse button.
 
 # Modes
 
@@ -183,6 +198,15 @@ A 1-bit mode like 10, but colorful.
 
 ## Known bugs and limitations
 * TIFF files may produce warnings in command line. On Windows these are opened as separate message boxes.
+* Images are only scaled to the current window size on load. Since Fapeed loads up to 100 images ahead, changing the window size takes a few images to take effect.
+
+# Release Notes
+
+## v0.2.0-alpha
+
+### added
+
+- rewind feature
 
 # Why "Fapeed"?
 

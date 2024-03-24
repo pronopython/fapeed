@@ -31,8 +31,10 @@
 
 import math
 import os
+import platform
 from random import randint
 import random
+import subprocess
 import sys
 import time
 from typing import NoReturn
@@ -61,6 +63,14 @@ class FapeedMainApp:
 			768,
 		)
 		self.running = False
+
+	def open_file(self, path) -> None:
+		if platform.system() == "Windows":
+			os.startfile(path)  # type: ignore
+		elif platform.system() == "Darwin":
+			subprocess.Popen(["open", path])
+		else:
+			subprocess.Popen(["xdg-open", path])
 
 	def run(self) -> NoReturn:  # type: ignore
 
@@ -107,8 +117,10 @@ class FapeedMainApp:
 
 		self.current_fapel = None
 		self.current_fapels = []
+		self.rewind_fapels = []
 		offset_x = 0
 		offset_y = 0
+		max_rewind_fapels = 100
 
 		#########################################################
 		# Mode definition
@@ -354,6 +366,8 @@ class FapeedMainApp:
 
 		status_text = ""
 		pause = False
+		rewind_active = False
+		rewind_position = 0
 		show_info = False
 		monofont = pygame.font.SysFont("monospace", 15)
 
@@ -370,9 +384,37 @@ class FapeedMainApp:
 							self.fps = 1
 					elif event.key == pygame.K_i:
 						show_info = not show_info
+					elif event.key == pygame.K_LEFT:
+						if rewind_active:
+							rewind_position += 1
+							if rewind_position >= len(self.rewind_fapels):
+								rewind_position = len(self.rewind_fapels) - 1
+						else:
+							rewind_active = True
+							pause = True
+							rewind_position = 0
+							pygame.display.set_caption("Fapeed (rewind)")
+					elif event.key == pygame.K_RIGHT:
+						if rewind_active:
+							rewind_position -= 1
+							if rewind_position <= 0:
+								rewind_position = 0
+						else:
+							rewind_active = True
+							pause = True
+							rewind_position = 0
+							pygame.display.set_caption("Fapeed (rewind)")
+					elif event.key == pygame.K_n:
+						if rewind_active:
+							self.open_file(self.rewind_fapels[rewind_position].filename)
 				if event.type == pygame.MOUSEBUTTONDOWN:
 					if event.button == 1:
 						pause = not pause
+						rewind_active = False
+						if pause:
+							pygame.display.set_caption("Fapeed (paused)")
+						else:
+							pygame.display.set_caption("Fapeed")
 
 			info = pygame.display.Info()
 			view_w, view_h = info.current_w, info.current_h
@@ -392,9 +434,12 @@ class FapeedMainApp:
 				self.current_fapel = self.image_loader.queue_images.pop()
 
 				self.current_fapels.insert(0, self.current_fapel)
+				self.rewind_fapels.insert(0, self.current_fapel)
 
 				if len(self.current_fapels) > simultaniously_shown_fapels:
 					self.current_fapels.pop()
+				if len(self.rewind_fapels) > max_rewind_fapels:
+					self.rewind_fapels.pop()
 
 				if random_position:
 					offset_y = randint(
@@ -528,6 +573,32 @@ class FapeedMainApp:
 
 				pygame.display.flip()
 				redraw = False
+
+			if pause and rewind_active:
+				color = (0, 0, 0)
+				pygame.draw.rect(
+					self.display,
+					color,
+					(
+						0,
+						0,
+						view_w,
+						view_h,
+					),
+				)
+
+				label = monofont.render("rewind", 1, (255, 0, 0))
+				self.display.blit(label, (3, 3))
+
+				rewind_fapel = self.rewind_fapels[rewind_position]
+
+				self.display.blit(
+					rewind_fapel.surface,
+					(rewind_fapel.offset_x,rewind_fapel.offset_y),
+				)
+				pygame.display.update()
+
+				pygame.display.flip()
 
 		self.crawler.stop()
 		self.image_loader.stop()
